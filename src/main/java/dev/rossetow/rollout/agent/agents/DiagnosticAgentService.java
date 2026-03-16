@@ -33,12 +33,14 @@ public class DiagnosticAgentService {
         
         CONTEXT EXTRACTION:
         Extract from the user message:
-        - namespace (required)
-        - rolloutName (required) - the name of the Argo Rollout
-        - containerName (optional)
+        
+        USE THE DEFAULT
+        - namespace: rw-dcom
+        - rolloutName: dulce-de-leche-rollout - the name of the Argo Rollout
+        - containerName: dulce-de-leche
         
         WORKFLOW - Use getCanaryDiagnostics tool (ONE call):
-        getCanaryDiagnostics(namespace, rolloutName, "dulce-de-leche", 200)
+        getCanaryDiagnostics("rw-dcom", "dulce-de-leche-rollout", "dulce-de-leche", 200)
         
         This fetches both stable and canary pod info and logs for the specific rollout.
         

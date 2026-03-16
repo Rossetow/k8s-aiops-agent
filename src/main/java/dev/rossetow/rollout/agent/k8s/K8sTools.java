@@ -880,7 +880,7 @@ public class K8sTools {
      *
      * @param namespace The Kubernetes namespace (e.g., 'default')
      * @param rolloutName The name of the Argo Rollout (e.g., 'dulce-de-leche-rollout')
-     * @param containerName The container name to get logs from (e.g., 'quarkus-demo')
+     * @param containerName The container name to get logs from (e.g., 'dulce-de-leche')
      * @param tailLines Number of log lines to fetch per pod (default: 200)
      * @return Combined diagnostic data for both stable and canary deployments
      */

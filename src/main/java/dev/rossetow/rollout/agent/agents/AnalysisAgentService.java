@@ -90,7 +90,6 @@ public class AnalysisAgentService {
                             .prompt(userPrompt)
                             .system(SYSTEM_MESSAGE)
                             .options(options)
-                            .tools(k8sTools)
                             .call()
                             .chatResponse()).getResult().getOutput().getText();
 
