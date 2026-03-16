@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubernetes-agent
+  labels:
+    app: kubernetes-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kubernetes-agent
+  template:
+    metadata:
+      labels:
+        app: kubernetes-agent
+    spec:
+      serviceAccountName: kubernetes-agent
+      containers:
+        - name: agent
+          image: rossetow/kubernetes-aiops-agent:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          env:
+            # SAP AI Core Configuration
+            - name: SAP_AICORE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: kubernetes-agent
+                  key: sap_aicore_client_id
+                  optional: true
+            - name: SAP_AICORE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: kubernetes-agent
+                  key: sap_aicore_client_secret
+                  optional: true
+            - name: SAP_AICORE_AUTH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: kubernetes-agent
+                  key: sap_aicore_auth_url
+                  optional: true
+            - name: SAP_AICORE_API_URL
+              valueFrom:
+                secretKeyRef:
+                  name: kubernetes-agent
+                  key: sap_aicore_api_url
+                  optional: true
+            - name: SAP_AICORE_DEPLOYMENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: kubernetes-agent
+                  key: sap_aicore_deployment_id
+                  optional: true
+            - name: SAP_AICORE_RESOURCE_GROUP
+              valueFrom:
+                secretKeyRef:
+                  name: kubernetes-agent
+                  key: sap_aicore_resource_group
+                  optional: true
+            - name: SAP_AICORE_MODEL_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: kubernetes-agent
+                  key: sap_aicore_model_name
+                  optional: true
+            - name: SAP_AICORE_MODEL_VERSION
+              valueFrom:
+                secretKeyRef:
+                  name: kubernetes-agent
+                  key: sap_aicore_model_version
+                  optional: true
+            # GitHub Configuration
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: kubernetes-agent
+                  key: github_token
+            # Git Configuration
+            - name: GIT_USERNAME
+              value: "kubernetes-agent"
+            - name: GIT_EMAIL
+              value: "kubernetes-agent@rossetow.org"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /a2a/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /a2a/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+      restartPolicy: Always

@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kubernetes-agent
+  namespace: argo-rollouts
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubernetes-agent
+  namespace: argo-rollouts
+rules:
+  # Read pods, logs, and events
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "events", "services", "configmaps", "endpoints", "namespace"]
+    verbs: ["get", "list", "watch"]
+  # Execute commands in pods (for debugging)
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create"]
+  # Read deployments and other workloads
+  - apiGroups: ["apps"]
+    resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
+    verbs: ["get", "list", "watch"]
+  # Read metrics
+  - apiGroups: ["metrics.k8s.io"]
+    resources: ["pods", "nodes"]
+    verbs: ["get", "list"]
+  - apiGroups: ["argoproj.io"]
+    resources: [ "pods", "nodes", "rollouts" ]
+    verbs: [ "get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubernetes-agent
+subjects:
+  - kind: ServiceAccount
+    name: kubernetes-agent
+    namespace: argo-rollouts
+roleRef:
+  kind: ClusterRole
+  name: kubernetes-agent
+  apiGroup: rbac.authorization.k8s.io
+---
+# Role for secrets access in the agent's namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kubernetes-agent-secrets
+  namespace: argo-rollouts
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: ["kubernetes-agent"]
+    verbs: ["get"]
+---
+# RoleBinding to allow the ServiceAccount to read its own secret
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kubernetes-agent-secrets
+  namespace: argo-rollouts
+subjects:
+  - kind: ServiceAccount
+    name: kubernetes-agent
+    namespace: argo-rollouts
+roleRef:
+  kind: Role
+  name: kubernetes-agent-secrets
+  apiGroup: rbac.authorization.k8s.io

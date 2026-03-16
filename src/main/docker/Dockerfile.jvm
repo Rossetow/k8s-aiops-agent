@@ -1,0 +1,43 @@
+####
+# This Dockerfile is used in order to build a container that runs the Spring Boot application in JVM mode
+#
+# Before building the container image run:
+#
+# ./mvnw clean package
+#
+# Then, build the image with:
+#
+# docker build -f src/main/docker/Dockerfile.jvm -t your-username/kubernetes-agent:latest .
+#
+# Then run the container using:
+#
+# docker run -i --rm -p 8080:8080 your-username/kubernetes-agent:latest
+#
+# If you want to include the debug port into your docker image
+# you will have to expose the debug port (default 5005) like this: EXPOSE 8080 5005.
+# Additionally you will have to set -e JAVA_TOOL_OPTIONS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+# when running the container
+#
+# Environment variables that can be configured:
+# - JAVA_OPTS: JVM options passed to the `java` command (example: "-Xmx512m -Xms256m")
+# - SPRING_PROFILES_ACTIVE: Spring profiles to activate (example: "prod")
+# - SERVER_PORT: Server port (default: 8080)
+###
+
+FROM registry.access.redhat.com/ubi9/openjdk-21:1.23
+
+ENV LANGUAGE='en_US:en'
+
+# Copy the Spring Boot fat JAR
+COPY --chown=185 target/*.jar /deployments/app.jar
+
+EXPOSE 8080
+USER 185
+
+# Configure Java options for containerized environment
+ENV JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+
+# Spring Boot configuration
+ENV SPRING_OUTPUT_ANSI_ENABLED=ALWAYS
+
+ENTRYPOINT ["java", "-jar", "/deployments/app.jar"]

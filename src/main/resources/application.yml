@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: kubernetes-agent
+  ai:
+    openai:
+      # SAP AI Core configuration will be set via environment variables
+      base-url: ${SAP_AICORE_API_URL:}/v2
+      api-key: ${SAP_AICORE_AUTH_TOKEN:not-set}
+      chat:
+        options:
+          model: ${SAP_AICORE_MODEL_NAME:gpt-4o}
+          temperature: 0.3
+          max-tokens: 4096
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# SAP AI Core Configuration
+sap:
+  aicore:
+    client-id: ${SAP_AICORE_CLIENT_ID:}
+    client-secret: ${SAP_AICORE_CLIENT_SECRET:}
+    auth-url: ${SAP_AICORE_AUTH_URL:}
+    api-url: ${SAP_AICORE_API_URL:}
+    deployment-id: ${SAP_AICORE_DEPLOYMENT_ID:}
+    resource-group: ${SAP_AICORE_RESOURCE_GROUP:default}
+    model-name: ${SAP_AICORE_MODEL_NAME:gpt-5}
+    model-version: ${SAP_AICORE_MODEL_VERSION:latest}
+
+# GitHub Configuration
+github:
+  token: ${GITHUB_TOKEN:}
+
+# Git Configuration
+git:
+  username: ${GIT_USERNAME:kubernetes-agent}
+  email: ${GIT_EMAIL:kubernetes-agent@example.com}
+
+# Logging
+logging:
+  level:
+    root: INFO
+    dev.rossetow.rollout.agent: DEBUG
+    org.springframework.ai: DEBUG
+    com.sap.ai.sdk: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
