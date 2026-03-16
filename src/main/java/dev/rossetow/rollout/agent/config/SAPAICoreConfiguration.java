@@ -311,7 +311,7 @@ public class SAPAICoreConfiguration {
      * This can be used instead of Spring AI's OpenAiChatModel if needed
      */
     @Bean(name = "chatClient")
-    public ChatClient chatClient() {
+    public ChatClient orchestrationClient() {
         log.info("Creating SAP AI SDK OpenAiChatModel as alternative");
         OrchestrationModuleConfig conf = new OrchestrationModuleConfig().withLlmConfig(CLAUDE_4_SONNET);
         OrchestrationChatOptions options = new OrchestrationChatOptions(conf);
