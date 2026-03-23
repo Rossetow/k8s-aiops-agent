@@ -375,112 +375,112 @@ public class K8sTools {
         }
     }
 
-    /**
-     * Get pod metrics
-     */
-    /**
-     * Get resource metrics (CPU and memory usage) for a Kubernetes pod. IMPORTANT: You must provide both the namespace and the exact pod name.
-     * @param namespace The Kubernetes namespace where the pod is located (e.g., 'default', 'kube-system'). REQUIRED.
-     * @param podName The exact name of the pod to get metrics for (e.g., 'my-app-7d8f9c5b6-xyz12'). REQUIRED. Do NOT leave this empty.
-     */
-    @Tool(description = "get metrics")
-    public Map<String, Object> getMetrics(String namespace, String podName) {
-        log.info("=== Executing Tool: getMetrics ===");
-
-        if (namespace == null || namespace.isEmpty() || podName == null || podName.isEmpty()) {
-            return Map.of("error", "namespace and podName are required and cannot be empty");
-        }
-        log.info(MessageFormat.format("Getting metrics for pod: {0}/{1}", namespace, podName));
-
-
-        try {
-            // Try to get actual metrics from metrics-server
-            try {
-                PodMetrics metrics = k8sClient.top().pods()
-                    .inNamespace(namespace)
-                    .withName(podName)
-                    .metric();
-
-                if (metrics != null) {
-                    List<Map<String, Object>> containerMetrics = metrics.getContainers().stream()
-                        .map(c -> {
-                            Map<String, Object> m = new HashMap<>();
-                            m.put("name", c.getName());
-                            m.put("cpu", c.getUsage().get("cpu").toString());
-                            m.put("memory", c.getUsage().get("memory").toString());
-                            return m;
-                        })
-                        .collect(Collectors.toList());
-                    log.info(MessageFormat.format("Retrieved actual metrics for {0} containers", containerMetrics.size()));
-
-                    return Map.of(
-                        "namespace", namespace,
-                        "podName", podName,
-                        "timestamp", metrics.getTimestamp(),
-                        "containers", containerMetrics
-                    );
-                }
-            } catch (Exception metricsException) {
-                log.warn("Metrics-server not available, falling back to resource requests/limits");
-            }
-
-            // Fallback: Get resource requests and limits from pod spec
-            Pod pod = k8sClient.pods()
-                .inNamespace(namespace)
-                .withName(podName)
-                .get();
-
-            if (pod == null) {
-                return Map.of("error", "Pod not found: " + namespace + "/" + podName);
-            }
-
-            Map<String, Object> metricsInfo = new HashMap<>();
-            metricsInfo.put("podName", podName);
-            metricsInfo.put("namespace", namespace);
-            metricsInfo.put("note", "Showing resource requests/limits (metrics-server not available for actual usage)");
-
-            List<Map<String, Object>> containerResources = new ArrayList<>();
-            if (pod.getSpec().getContainers() != null) {
-                for (var container : pod.getSpec().getContainers()) {
-                    ResourceRequirements resources = container.getResources();
-
-                    if (resources != null) {
-                        Map<String, Object> containerInfo = new HashMap<>();
-                        containerInfo.put("containerName", container.getName());
-
-                        // Requests
-                        if (resources.getRequests() != null) {
-                            Map<String, String> requests = new HashMap<>();
-                            resources.getRequests().forEach((key, value) ->
-                                requests.put(key, value.toString())
-                            );
-                            containerInfo.put("requests", requests);
-                        }
-
-                        // Limits
-                        if (resources.getLimits() != null) {
-                            Map<String, String> limits = new HashMap<>();
-                            resources.getLimits().forEach((key, value) ->
-                                limits.put(key, value.toString())
-                            );
-                            containerInfo.put("limits", limits);
-                        }
-
-                        containerResources.add(containerInfo);
-                    }
-                }
-            }
-
-            metricsInfo.put("containers", containerResources);
-            log.info(MessageFormat.format("Retrieved resource requests/limits for pod: {0}/{1}", namespace, podName));
-
-            return metricsInfo;
-
-        } catch (Exception e) {
-            log.error("Error getting metrics", e);
-            return Map.of("error", e.getMessage());
-        }
-    }
+//    /**
+//     * Get pod metrics
+//     */
+//    /**
+//     * Get resource metrics (CPU and memory usage) for a Kubernetes pod. IMPORTANT: You must provide both the namespace and the exact pod name.
+//     * @param namespace The Kubernetes namespace where the pod is located (e.g., 'default', 'kube-system'). REQUIRED.
+//     * @param podName The exact name of the pod to get metrics for (e.g., 'my-app-7d8f9c5b6-xyz12'). REQUIRED. Do NOT leave this empty.
+//     */
+//    @Tool(description = "get metrics")
+//    public Map<String, Object> getMetrics(String namespace, String podName) {
+//        log.info("=== Executing Tool: getMetrics ===");
+//
+//        if (namespace == null || namespace.isEmpty() || podName == null || podName.isEmpty()) {
+//            return Map.of("error", "namespace and podName are required and cannot be empty");
+//        }
+//        log.info(MessageFormat.format("Getting metrics for pod: {0}/{1}", namespace, podName));
+//
+//
+//        try {
+//            // Try to get actual metrics from metrics-server
+//            try {
+//                PodMetrics metrics = k8sClient.top().pods()
+//                    .inNamespace(namespace)
+//                    .withName(podName)
+//                    .metric();
+//
+//                if (metrics != null) {
+//                    List<Map<String, Object>> containerMetrics = metrics.getContainers().stream()
+//                        .map(c -> {
+//                            Map<String, Object> m = new HashMap<>();
+//                            m.put("name", c.getName());
+//                            m.put("cpu", c.getUsage().get("cpu").toString());
+//                            m.put("memory", c.getUsage().get("memory").toString());
+//                            return m;
+//                        })
+//                        .collect(Collectors.toList());
+//                    log.info(MessageFormat.format("Retrieved actual metrics for {0} containers", containerMetrics.size()));
+//
+//                    return Map.of(
+//                        "namespace", namespace,
+//                        "podName", podName,
+//                        "timestamp", metrics.getTimestamp(),
+//                        "containers", containerMetrics
+//                    );
+//                }
+//            } catch (Exception metricsException) {
+//                log.warn("Metrics-server not available, falling back to resource requests/limits");
+//            }
+//
+//            // Fallback: Get resource requests and limits from pod spec
+//            Pod pod = k8sClient.pods()
+//                .inNamespace(namespace)
+//                .withName(podName)
+//                .get();
+//
+//            if (pod == null) {
+//                return Map.of("error", "Pod not found: " + namespace + "/" + podName);
+//            }
+//
+//            Map<String, Object> metricsInfo = new HashMap<>();
+//            metricsInfo.put("podName", podName);
+//            metricsInfo.put("namespace", namespace);
+//            metricsInfo.put("note", "Showing resource requests/limits (metrics-server not available for actual usage)");
+//
+//            List<Map<String, Object>> containerResources = new ArrayList<>();
+//            if (pod.getSpec().getContainers() != null) {
+//                for (var container : pod.getSpec().getContainers()) {
+//                    ResourceRequirements resources = container.getResources();
+//
+//                    if (resources != null) {
+//                        Map<String, Object> containerInfo = new HashMap<>();
+//                        containerInfo.put("containerName", container.getName());
+//
+//                        // Requests
+//                        if (resources.getRequests() != null) {
+//                            Map<String, String> requests = new HashMap<>();
+//                            resources.getRequests().forEach((key, value) ->
+//                                requests.put(key, value.toString())
+//                            );
+//                            containerInfo.put("requests", requests);
+//                        }
+//
+//                        // Limits
+//                        if (resources.getLimits() != null) {
+//                            Map<String, String> limits = new HashMap<>();
+//                            resources.getLimits().forEach((key, value) ->
+//                                limits.put(key, value.toString())
+//                            );
+//                            containerInfo.put("limits", limits);
+//                        }
+//
+//                        containerResources.add(containerInfo);
+//                    }
+//                }
+//            }
+//
+//            metricsInfo.put("containers", containerResources);
+//            log.info(MessageFormat.format("Retrieved resource requests/limits for pod: {0}/{1}", namespace, podName));
+//
+//            return metricsInfo;
+//
+//        } catch (Exception e) {
+//            log.error("Error getting metrics", e);
+//            return Map.of("error", e.getMessage());
+//        }
+//    }
 
     /**
      * Inspect Kubernetes resources in a namespace. Use labelSelector to filter pods by labels (e.g., 'role=stable' or 'role=canary')
@@ -706,161 +706,161 @@ public class K8sTools {
         return labels;
     }
 
-    /**
-     * Fetch application metrics from a pod's Prometheus metrics endpoint
-     * @param namespace The Kubernetes namespace where the pod is located
-     * @param podName The exact name of the pod to fetch metrics from
-     * @param metricsPath The path to the metrics endpoint (default: /q/metrics)
-     * @param port The port number for the metrics endpoint (default: 8080)
-     */
-    @Tool(description = "fetch application metrics")
-    public Map<String, Object> fetchApplicationMetrics(String namespace, String podName, String metricsPath, Integer port) {
-        log.info("=== Executing Tool: fetchApplicationMetrics ===");
-
-        if (namespace == null || namespace.isEmpty() || podName == null || podName.isEmpty()) {
-            return Map.of("error", "namespace and podName are required and cannot be empty");
-        }
-
-        String path = (metricsPath != null && !metricsPath.isEmpty()) ? metricsPath : "/q/metrics";
-        int targetPort = (port != null && port > 0) ? port : 8080;
-
-        log.info(MessageFormat.format("Fetching application metrics from pod: {0}/{1} at {2}:{3}",
-                namespace, podName, path, targetPort));
-
-        try {
-            Pod pod = k8sClient.pods()
-                .inNamespace(namespace)
-                .withName(podName)
-                .get();
-
-            if (pod == null) {
-                return Map.of("error", MessageFormat.format("Pod not found: {0}/{1}", namespace, podName));
-            }
-
-            String podIP = pod.getStatus().getPodIP();
-            if (podIP == null || podIP.isEmpty()) {
-                return Map.of("error", "Pod IP not available - pod may not be running");
-            }
-
-            try {
-                String metricsUrl = MessageFormat.format("http://{0}:{1}{2}", podIP, targetPort, path);
-                log.info(MessageFormat.format("Fetching metrics from URL: {0}", metricsUrl));
-
-                java.net.http.HttpClient client = java.net.http.HttpClient.newBuilder()
-                    .connectTimeout(java.time.Duration.ofSeconds(5))
-                    .build();
-
-                java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
-                    .uri(java.net.URI.create(metricsUrl))
-                    .timeout(java.time.Duration.ofSeconds(10))
-                    .GET()
-                    .build();
-
-                java.net.http.HttpResponse<String> response = client.send(request,
-                    java.net.http.HttpResponse.BodyHandlers.ofString());
-
-                if (response.statusCode() != 200) {
-                    return Map.of(
-                        "error", "Failed to fetch metrics",
-                        "statusCode", response.statusCode()
-                    );
-                }
-
-                Map<String, Object> parsedMetrics = parsePrometheusMetrics(response.body());
-                parsedMetrics.put("namespace", namespace);
-                parsedMetrics.put("podName", podName);
-                parsedMetrics.put("podIP", podIP);
-
-                log.info(MessageFormat.format("Successfully fetched metrics from pod: {0}/{1}", namespace, podName));
-                return parsedMetrics;
-
-            } catch (java.io.IOException | InterruptedException e) {
-                log.error("Error fetching metrics from pod", e);
-                return Map.of(
-                    "error", "Failed to connect to pod metrics endpoint",
-                    "details", e.getMessage(),
-                    "podIP", podIP
-                );
-            }
-
-        } catch (Exception e) {
-            log.error("Error fetching application metrics", e);
-            return Map.of("error", e.getMessage());
-        }
-    }
-
-    private Map<String, Object> parsePrometheusMetrics(String metricsText) {
-        Map<String, Object> metrics = new HashMap<>();
-
-        String[] lines = metricsText.split("\n");
-        for (String line : lines) {
-            if (line.startsWith("#") || line.trim().isEmpty()) {
-                continue;
-            }
-
-            try {
-                int spaceIndex = line.lastIndexOf(' ');
-                if (spaceIndex > 0) {
-                    String metricPart = line.substring(0, spaceIndex);
-                    String value = line.substring(spaceIndex + 1);
-
-                    if (metricPart.startsWith("http_requests_total")) {
-                        metrics.put("totalRequests", Double.parseDouble(value));
-                    } else if (metricPart.startsWith("http_requests_success_total")) {
-                        metrics.put("successfulRequests", Double.parseDouble(value));
-                    } else if (metricPart.startsWith("http_requests_error_total")) {
-                        metrics.put("errorRequests", Double.parseDouble(value));
-                    } else if (metricPart.startsWith("http_requests_success_rate")) {
-                        metrics.put("successRate", Double.parseDouble(value) * 100);
-                    } else if (metricPart.contains("http_request_duration_seconds") && metricPart.contains("quantile=\"0.5\"")) {
-                        metrics.put("latencyP50Ms", Double.parseDouble(value) * 1000);
-                    } else if (metricPart.contains("http_request_duration_seconds") && metricPart.contains("quantile=\"0.95\"")) {
-                        metrics.put("latencyP95Ms", Double.parseDouble(value) * 1000);
-                    } else if (metricPart.contains("http_request_duration_seconds") && metricPart.contains("quantile=\"0.99\"")) {
-                        metrics.put("latencyP99Ms", Double.parseDouble(value) * 1000);
-                    } else if (metricPart.contains("http_request_duration_seconds_sum")) {
-                        metrics.put("latencySumSeconds", Double.parseDouble(value));
-                    } else if (metricPart.contains("http_request_duration_seconds_count")) {
-                        metrics.put("latencyCount", Double.parseDouble(value));
-                    } else if (metricPart.startsWith("app_version_info") && metricPart.contains("version=\"")) {
-                        int versionStart = metricPart.indexOf("version=\"") + 9;
-                        int versionEnd = metricPart.indexOf("\"", versionStart);
-                        if (versionEnd > versionStart) {
-                            metrics.put("version", metricPart.substring(versionStart, versionEnd));
-                        }
-                        if (metricPart.contains("scenario=\"")) {
-                            int scenarioStart = metricPart.indexOf("scenario=\"") + 10;
-                            int scenarioEnd = metricPart.indexOf("\"", scenarioStart);
-                            if (scenarioEnd > scenarioStart) {
-                                metrics.put("scenario", metricPart.substring(scenarioStart, scenarioEnd));
-                            }
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                log.debug("Failed to parse metric line: " + line, e);
-            }
-        }
-
-        if (metrics.containsKey("totalRequests") && metrics.containsKey("successfulRequests")) {
-            double total = (Double) metrics.get("totalRequests");
-            double successful = (Double) metrics.get("successfulRequests");
-            if (total > 0) {
-                metrics.put("calculatedSuccessRate", (successful / total) * 100);
-                metrics.put("errorRate", ((total - successful) / total) * 100);
-            }
-        }
-
-        if (metrics.containsKey("latencySumSeconds") && metrics.containsKey("latencyCount")) {
-            double sum = (Double) metrics.get("latencySumSeconds");
-            double count = (Double) metrics.get("latencyCount");
-            if (count > 0) {
-                metrics.put("latencyMeanMs", (sum / count) * 1000);
-            }
-        }
-
-        return metrics;
-    }
+//    /**
+//     * Fetch application metrics from a pod's Prometheus metrics endpoint
+//     * @param namespace The Kubernetes namespace where the pod is located
+//     * @param podName The exact name of the pod to fetch metrics from
+//     * @param metricsPath The path to the metrics endpoint (default: /q/metrics)
+//     * @param port The port number for the metrics endpoint (default: 8080)
+//     */
+//    @Tool(description = "fetch application metrics")
+//    public Map<String, Object> fetchApplicationMetrics(String namespace, String podName, String metricsPath, Integer port) {
+//        log.info("=== Executing Tool: fetchApplicationMetrics ===");
+//
+//        if (namespace == null || namespace.isEmpty() || podName == null || podName.isEmpty()) {
+//            return Map.of("error", "namespace and podName are required and cannot be empty");
+//        }
+//
+//        String path = (metricsPath != null && !metricsPath.isEmpty()) ? metricsPath : "/q/metrics";
+//        int targetPort = (port != null && port > 0) ? port : 8080;
+//
+//        log.info(MessageFormat.format("Fetching application metrics from pod: {0}/{1} at {2}:{3}",
+//                namespace, podName, path, targetPort));
+//
+//        try {
+//            Pod pod = k8sClient.pods()
+//                .inNamespace(namespace)
+//                .withName(podName)
+//                .get();
+//
+//            if (pod == null) {
+//                return Map.of("error", MessageFormat.format("Pod not found: {0}/{1}", namespace, podName));
+//            }
+//
+//            String podIP = pod.getStatus().getPodIP();
+//            if (podIP == null || podIP.isEmpty()) {
+//                return Map.of("error", "Pod IP not available - pod may not be running");
+//            }
+//
+//            try {
+//                String metricsUrl = MessageFormat.format("http://{0}:{1}{2}", podIP, targetPort, path);
+//                log.info(MessageFormat.format("Fetching metrics from URL: {0}", metricsUrl));
+//
+//                java.net.http.HttpClient client = java.net.http.HttpClient.newBuilder()
+//                    .connectTimeout(java.time.Duration.ofSeconds(5))
+//                    .build();
+//
+//                java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+//                    .uri(java.net.URI.create(metricsUrl))
+//                    .timeout(java.time.Duration.ofSeconds(10))
+//                    .GET()
+//                    .build();
+//
+//                java.net.http.HttpResponse<String> response = client.send(request,
+//                    java.net.http.HttpResponse.BodyHandlers.ofString());
+//
+//                if (response.statusCode() != 200) {
+//                    return Map.of(
+//                        "error", "Failed to fetch metrics",
+//                        "statusCode", response.statusCode()
+//                    );
+//                }
+//
+//                Map<String, Object> parsedMetrics = parsePrometheusMetrics(response.body());
+//                parsedMetrics.put("namespace", namespace);
+//                parsedMetrics.put("podName", podName);
+//                parsedMetrics.put("podIP", podIP);
+//
+//                log.info(MessageFormat.format("Successfully fetched metrics from pod: {0}/{1}", namespace, podName));
+//                return parsedMetrics;
+//
+//            } catch (java.io.IOException | InterruptedException e) {
+//                log.error("Error fetching metrics from pod", e);
+//                return Map.of(
+//                    "error", "Failed to connect to pod metrics endpoint",
+//                    "details", e.getMessage(),
+//                    "podIP", podIP
+//                );
+//            }
+//
+//        } catch (Exception e) {
+//            log.error("Error fetching application metrics", e);
+//            return Map.of("error", e.getMessage());
+//        }
+//    }
+//
+//    private Map<String, Object> parsePrometheusMetrics(String metricsText) {
+//        Map<String, Object> metrics = new HashMap<>();
+//
+//        String[] lines = metricsText.split("\n");
+//        for (String line : lines) {
+//            if (line.startsWith("#") || line.trim().isEmpty()) {
+//                continue;
+//            }
+//
+//            try {
+//                int spaceIndex = line.lastIndexOf(' ');
+//                if (spaceIndex > 0) {
+//                    String metricPart = line.substring(0, spaceIndex);
+//                    String value = line.substring(spaceIndex + 1);
+//
+//                    if (metricPart.startsWith("http_requests_total")) {
+//                        metrics.put("totalRequests", Double.parseDouble(value));
+//                    } else if (metricPart.startsWith("http_requests_success_total")) {
+//                        metrics.put("successfulRequests", Double.parseDouble(value));
+//                    } else if (metricPart.startsWith("http_requests_error_total")) {
+//                        metrics.put("errorRequests", Double.parseDouble(value));
+//                    } else if (metricPart.startsWith("http_requests_success_rate")) {
+//                        metrics.put("successRate", Double.parseDouble(value) * 100);
+//                    } else if (metricPart.contains("http_request_duration_seconds") && metricPart.contains("quantile=\"0.5\"")) {
+//                        metrics.put("latencyP50Ms", Double.parseDouble(value) * 1000);
+//                    } else if (metricPart.contains("http_request_duration_seconds") && metricPart.contains("quantile=\"0.95\"")) {
+//                        metrics.put("latencyP95Ms", Double.parseDouble(value) * 1000);
+//                    } else if (metricPart.contains("http_request_duration_seconds") && metricPart.contains("quantile=\"0.99\"")) {
+//                        metrics.put("latencyP99Ms", Double.parseDouble(value) * 1000);
+//                    } else if (metricPart.contains("http_request_duration_seconds_sum")) {
+//                        metrics.put("latencySumSeconds", Double.parseDouble(value));
+//                    } else if (metricPart.contains("http_request_duration_seconds_count")) {
+//                        metrics.put("latencyCount", Double.parseDouble(value));
+//                    } else if (metricPart.startsWith("app_version_info") && metricPart.contains("version=\"")) {
+//                        int versionStart = metricPart.indexOf("version=\"") + 9;
+//                        int versionEnd = metricPart.indexOf("\"", versionStart);
+//                        if (versionEnd > versionStart) {
+//                            metrics.put("version", metricPart.substring(versionStart, versionEnd));
+//                        }
+//                        if (metricPart.contains("scenario=\"")) {
+//                            int scenarioStart = metricPart.indexOf("scenario=\"") + 10;
+//                            int scenarioEnd = metricPart.indexOf("\"", scenarioStart);
+//                            if (scenarioEnd > scenarioStart) {
+//                                metrics.put("scenario", metricPart.substring(scenarioStart, scenarioEnd));
+//                            }
+//                        }
+//                    }
+//                }
+//            } catch (Exception e) {
+//                log.debug("Failed to parse metric line: " + line, e);
+//            }
+//        }
+//
+//        if (metrics.containsKey("totalRequests") && metrics.containsKey("successfulRequests")) {
+//            double total = (Double) metrics.get("totalRequests");
+//            double successful = (Double) metrics.get("successfulRequests");
+//            if (total > 0) {
+//                metrics.put("calculatedSuccessRate", (successful / total) * 100);
+//                metrics.put("errorRate", ((total - successful) / total) * 100);
+//            }
+//        }
+//
+//        if (metrics.containsKey("latencySumSeconds") && metrics.containsKey("latencyCount")) {
+//            double sum = (Double) metrics.get("latencySumSeconds");
+//            double count = (Double) metrics.get("latencyCount");
+//            if (count > 0) {
+//                metrics.put("latencyMeanMs", (sum / count) * 1000);
+//            }
+//        }
+//
+//        return metrics;
+//    }
 
     /**
      * Fetches both stable and canary pod information and logs for a specific Argo Rollout.
@@ -879,8 +879,8 @@ public class K8sTools {
      * 7. Returns combined data structure with pod info and logs for both
      *
      * @param namespace The Kubernetes namespace (e.g., 'default')
-     * @param rolloutName The name of the Argo Rollout (e.g., 'dulce-de-leche-rollout')
-     * @param containerName The container name to get logs from (e.g., 'dulce-de-leche')
+     * @param rolloutName The name of the Argo Rollout (e.g., 'istio-rollout')
+     * @param containerName The container name to get logs from (e.g., 'istio-rollout')
      * @param tailLines Number of log lines to fetch per pod (default: 200)
      * @return Combined diagnostic data for both stable and canary deployments
      */

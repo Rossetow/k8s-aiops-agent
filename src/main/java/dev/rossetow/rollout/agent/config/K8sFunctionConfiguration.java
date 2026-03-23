@@ -44,12 +44,12 @@ public class K8sFunctionConfiguration {
             request.tailLines()
         );
     }
-
-    @Bean
-    @Description("Get resource metrics (CPU and memory usage) for a Kubernetes pod. IMPORTANT: You must provide both the namespace and the exact pod name.")
-    public Function<GetMetricsRequest, Map<String, Object>> getMetrics() {
-        return request -> k8sTools.getMetrics(request.namespace(), request.podName());
-    }
+//
+//    @Bean
+//    @Description("Get resource metrics (CPU and memory usage) for a Kubernetes pod. IMPORTANT: You must provide both the namespace and the exact pod name.")
+//    public Function<GetMetricsRequest, Map<String, Object>> getMetrics() {
+//        return request -> k8sTools.getMetrics(request.namespace(), request.podName());
+//    }
 
     @Bean
     @Description("Inspect Kubernetes resources in a namespace. Use labelSelector to filter pods by labels (e.g., 'role=stable' or 'role=canary')")
@@ -62,16 +62,16 @@ public class K8sFunctionConfiguration {
         );
     }
 
-    @Bean
-    @Description("Fetch application metrics from a pod's Prometheus metrics endpoint. Returns error rates, request counts, latency, and custom application metrics.")
-    public Function<FetchApplicationMetricsRequest, Map<String, Object>> fetchApplicationMetrics() {
-        return request -> k8sTools.fetchApplicationMetrics(
-            request.namespace(),
-            request.podName(),
-            request.metricsPath(),
-            request.port()
-        );
-    }
+//    @Bean
+//    @Description("Fetch application metrics from a pod's Prometheus metrics endpoint. Returns error rates, request counts, latency, and custom application metrics.")
+//    public Function<FetchApplicationMetricsRequest, Map<String, Object>> fetchApplicationMetrics() {
+//        return request -> k8sTools.fetchApplicationMetrics(
+//            request.namespace(),
+//            request.podName(),
+//            request.metricsPath(),
+//            request.port()
+//        );
+//    }
 
     @Bean
     @Description("Get canary diagnostics comparing stable and canary pods for an Argo Rollout. Fetches pod information and logs for both stable and canary deployments.")

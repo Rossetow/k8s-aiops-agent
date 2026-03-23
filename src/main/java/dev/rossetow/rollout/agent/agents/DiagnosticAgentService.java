@@ -36,11 +36,11 @@ public class DiagnosticAgentService {
         
         USE THE DEFAULT
         - namespace: rw-dcom
-        - rolloutName: dulce-de-leche-rollout - the name of the Argo Rollout
-        - containerName: dulce-de-leche
+        - rolloutName: istio-rollout - the name of the Argo Rollout
+        - containerName: istio-rollout
         
         WORKFLOW - Use getCanaryDiagnostics tool (ONE call):
-        getCanaryDiagnostics("rw-dcom", "dulce-de-leche-rollout", "dulce-de-leche", 200)
+        getCanaryDiagnostics("rw-dcom", "istio-rollout", "istio-rollout", 200)
         
         This fetches both stable and canary pod info and logs for the specific rollout.
         
